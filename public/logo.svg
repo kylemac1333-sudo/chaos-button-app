@@ -1,0 +1,13 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 128 128" role="img" aria-label="Chaos Logo">
+  <defs>
+    <linearGradient id="bg" x1="0%" x2="100%" y1="0%" y2="100%">
+      <stop offset="0%" stop-color="#7c3aed" />
+      <stop offset="50%" stop-color="#ec4899" />
+      <stop offset="100%" stop-color="#f59e0b" />
+    </linearGradient>
+  </defs>
+  <rect width="128" height="128" rx="28" fill="url(#bg)"/>
+  <circle cx="64" cy="64" r="42" fill="rgba(255,255,255,0.15)" stroke="rgba(255,255,255,0.9)" stroke-width="4"/>
+  <path d="M64 22 L74 48 L102 50 L80 68 L88 96 L64 80 L40 96 L48 68 L26 50 L54 48 Z" fill="white" opacity="0.92"/>
+  <circle cx="64" cy="64" r="9" fill="#7c3aed"/>
+</svg>
