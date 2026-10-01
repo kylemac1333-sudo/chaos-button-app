@@ -4,12 +4,12 @@ const THEMES = ['theme-ocean', 'theme-sunset', 'theme-forest', 'theme-midnight',
 
 const JOKES = [
   'Why did the developer go broke? Because they lost their cache!',
-  'A programmer walks into a bar. The bartender says, “We need to talk about your variables.”',
+  'A programmer walks into a bar. The bartender says, "We need to talk about your variables."',
   'I would tell you a UDP joke, but you might not get it.',
-  'A SQL query walks into a bar and says, “Can I join you?”',
-  'There are 10 kinds of people in the world: those who understand binary and those who don’t.',
+  'A SQL query walks into a bar and says, "Can I join you?"',
+  'There are 10 kinds of people in the world: those who understand binary and those who don\'t.',
   'The best part of debugging is pretending to know what is going on.',
-  'Why do Java developers wear glasses? Because they don’t C#!',
+  'Why do Java developers wear glasses? Because they don\'t C#!',
   'I tried to write a bot that tells jokes, but it keeps returning undefined.',
 ];
 
@@ -19,16 +19,16 @@ const CHALLENGES = [
   'Tell someone a terrible pun.',
   'Dance for 15 seconds like no one is watching.',
   'Drink a glass of water.',
-  'Say “chaos is my middle name” out loud.',
+  'Say "chaos is my middle name" out loud.',
   'Take a 30-second walk around the room.',
   'Close your eyes and breathe for 10 slow counts.',
   'Make the weirdest face you can.',
 ];
 
 const EMOJIS = ['✨', '🎉', '🌟', '💥', '🚀', '🎊', '🎈', '🔥', '🌈', '🤖'];
-const OBJECTS = ['🌙', '☄️', '🎁', '🪐', '💎', '🎯', '👑', '🌍'];
+const OBJECTS = ['🌙', '⭐', '🎁', '💎', '🏆', '👑', '🎪', '🌍'];
 
-function HomePage() {
+function HomePage({ onChaos, history }) {
   const [clickCount, setClickCount] = useState(0);
   const [theme, setTheme] = useState('theme-ocean');
   const [statusText, setStatusText] = useState('Ready for some beautiful chaos?');
@@ -83,9 +83,6 @@ function HomePage() {
     if (!AudioCtx) return;
 
     const audioCtx = new AudioCtx();
-    const oscillator = audioCtx.createOscillator();
-    const gainNode = audioCtx.createGain();
-
     const frequencies = {
       chaos: [260, 420, 620],
       success: [390, 520, 680],
@@ -94,20 +91,30 @@ function HomePage() {
     };
 
     const chosen = frequencies[tone] || frequencies.chaos;
-    oscillator.type = 'triangle';
-    oscillator.frequency.setValueAtTime(chosen[0], audioCtx.currentTime);
-    oscillator.frequency.linearRampToValueAtTime(chosen[1], audioCtx.currentTime + 0.08);
-    oscillator.frequency.linearRampToValueAtTime(chosen[2], audioCtx.currentTime + 0.22);
+    const oscillators = [];
+    const gainNodes = [];
 
-    gainNode.gain.setValueAtTime(0.0001, audioCtx.currentTime);
-    gainNode.gain.exponentialRampToValueAtTime(0.06, audioCtx.currentTime + 0.04);
-    gainNode.gain.exponentialRampToValueAtTime(0.0001, audioCtx.currentTime + 0.3);
+    // Layer multiple oscillators for richer sound
+    chosen.forEach((freq, idx) => {
+      const osc = audioCtx.createOscillator();
+      const gain = audioCtx.createGain();
 
-    oscillator.connect(gainNode);
-    gainNode.connect(audioCtx.destination);
+      osc.type = idx % 2 === 0 ? 'sine' : 'triangle';
+      osc.frequency.setValueAtTime(freq, audioCtx.currentTime);
+      osc.frequency.linearRampToValueAtTime(freq * 0.8, audioCtx.currentTime + 0.1);
 
-    oscillator.start();
-    oscillator.stop(audioCtx.currentTime + 0.35);
+      gain.gain.setValueAtTime(0.0001, audioCtx.currentTime);
+      gain.gain.exponentialRampToValueAtTime(0.04 / chosen.length, audioCtx.currentTime + 0.05);
+      gain.gain.exponentialRampToValueAtTime(0.0001, audioCtx.currentTime + 0.35);
+
+      osc.connect(gain);
+      gain.connect(audioCtx.destination);
+      osc.start();
+      osc.stop(audioCtx.currentTime + 0.35);
+
+      oscillators.push(osc);
+      gainNodes.push(gain);
+    });
 
     setTimeout(() => audioCtx.close(), 500);
   };
@@ -125,12 +132,14 @@ function HomePage() {
       theme: () => {
         const nextTheme = THEMES[Math.floor(Math.random() * THEMES.length)];
         setTheme(nextTheme);
-        setEmotion('Theme shift!');
+        setEmotion('🎨 Theme shift!');
+        onChaos('Theme changed');
         playTone('chaos');
       },
       animation: () => {
-        setEmotion('Wave motion!');
+        setEmotion('🌊 Wave motion!');
         setShake(true);
+        onChaos('Screen shook');
         playTone('alert');
       },
       emoji: () => {
@@ -142,11 +151,13 @@ function HomePage() {
         }));
         setEmojis(nextEmojis);
         setTimeout(() => setEmojis([]), 1300);
+        onChaos('Emojis burst');
         playTone('success');
       },
       joke: () => {
         const randomJoke = JOKES[Math.floor(Math.random() * JOKES.length)];
         setStatusText(randomJoke);
+        onChaos('Joke told');
         playTone('chaos');
       },
       countdown: () => {
@@ -155,11 +166,13 @@ function HomePage() {
           setTimeout(() => setCountdown(value), index * 700);
         });
         setTimeout(() => setCountdown(null), 4200);
+        onChaos('Countdown started');
         playTone('alert');
       },
       flee: () => {
         setFleeing(true);
-        setStatusText('The button is running away!');
+        setStatusText('🏃 The button is running away!');
+        onChaos('Button fled');
         setTimeout(() => {
           setFleeing(false);
           if (buttonRef.current) {
@@ -171,13 +184,15 @@ function HomePage() {
       },
       shake: () => {
         setShake(true);
-        setEmotion('Screen shake!');
+        setEmotion('💫 Screen shake!');
+        onChaos('Earthquake triggered');
         playTone('alert');
       },
       challenge: () => {
         const randomChallenge = CHALLENGES[Math.floor(Math.random() * CHALLENGES.length)];
         setChallengeText(randomChallenge);
         setStatusText(`Challenge unlocked: ${randomChallenge}`);
+        onChaos('Challenge issued');
         playTone('success');
       },
       object: () => {
@@ -189,18 +204,21 @@ function HomePage() {
         }));
         setObjects(nextObjects);
         setTimeout(() => setObjects([]), 1800);
+        onChaos('Objects spawned');
         playTone('chaos');
       },
       colorShift: () => {
-        setEmotion('Double rainbow energy!');
+        setEmotion('🌈 Double rainbow energy!');
         setRainbowMode(true);
         setTimeout(() => setRainbowMode(false), 1000);
+        onChaos('Colors shifted');
         playTone('success');
       },
       secret: () => {
         setSecretBurst(true);
         setStatusText('✨ JACKPOT CHAOS! ✨');
-        setEmotion('Secret event activated!');
+        setEmotion('🎰 Secret event activated!');
+        onChaos('JACKPOT!');
         setTimeout(() => setSecretBurst(false), 1400);
         playTone('secret');
       },
@@ -323,36 +341,4 @@ function HomePage() {
   );
 }
 
-function ChallengePage() {
-  const challengeList = [
-    'Say a ridiculous compliment to a stranger.',
-    'Make the best fake announcement voice you can.',
-    'Take three deep breaths while staring at the ceiling.',
-    'Find a tiny object and turn it into a trophy.',
-    'Close your eyes and count to 20 in a dramatic voice.',
-    'Create a two-word mission statement for your day.',
-    'Do a tiny victory dance before lunch.',
-    'Change your background color for the next 10 minutes.',
-  ];
-
-  return (
-    <div className="challenge-page">
-      <div className="card glass-card">
-        <p className="eyebrow">Daily challenge deck</p>
-        <h2>Pick your chaos-level challenge</h2>
-
-        <div className="challenge-list">
-          {challengeList.map((item, index) => (
-            <div key={item} className="challenge-item">
-              <span>{index + 1}</span>
-              <p>{item}</p>
-            </div>
-          ))}
-        </div>
-      </div>
-    </div>
-  );
-}
-
 export default HomePage;
-export { ChallengePage };
