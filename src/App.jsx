@@ -1,5 +1,5 @@
-import { useState } from 'react';
 import { NavLink, Route, Routes } from 'react-router-dom';
+import { useState } from 'react';
 import LandingPage from './pages/LandingPage';
 import HomePage from './pages/HomePage';
 import ChallengePage from './pages/ChallengePage';
